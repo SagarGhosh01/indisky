@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Translator</title>
+</head>
+<body>
+    <h1>Welcome to the Live Translator!</h1>
+    <form action="/translate" method="POST">
+        <label for="source_lang">Source Language (e.g., en):</label>
+        <input type="text" id="source_lang" name="source_lang" required><br><br>
+
+        <label for="target_lang">Target Language (e.g., es):</label>
+        <input type="text" id="target_lang" name="target_lang" required><br><br>
+
+        <label for="text">Text to translate:</label>
+        <input type="text" id="text" name="text" required><br><br>
+
+        <button type="submit">Translate</button>
+    </form>
+
+    {% if translation %}
+        <h2>Translated Text: {{ translation }}</h2>
+        <p>Translation took: {{ time_taken }}</p>
+    {% endif %}
+
+    {% if error %}
+        <h2>Error: {{ error }}</h2>
+    {% endif %}
+</body>
+</html>
