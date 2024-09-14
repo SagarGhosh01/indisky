@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live GPS Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        #map {
+            height: 400px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h1>Live GPS Tracker</h1>
+    <div id="map"></div>
+    <p id="status">Getting location...</p>
+
+    <script src="https://cdn.jsdelivr.net/npm/socket.io@4.0.0/dist/socket.io.min.js"></script>
+    <script>
+        // Establish connection to the server
+        const socket = io();
+
+        // Check for Geolocation support
+        if ("geolocation" in navigator) {
+            navigator.geolocation.watchPosition(
+                (position) => {
+                    const { latitude, longitude } = position.coords;
+                    document.getElementById('status').textContent = `Lat: ${latitude}, Lng: ${longitude}`;
+
+                    // Emit location data to the backend
+                    socket.emit('send-location', { latitude, longitude });
+                },
+                (error) => {
+                    console.error("Error getting location", error);
+                    document.getElementById('status').textContent = 'Unable to retrieve location';
+                },
+                {
+                    enableHighAccuracy: true
+                }
+            );
+        } else {
+            document.getElementById('status').textContent = 'Geolocation not supported';
+        }
+    </script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    
+    <div id="map" style="height: 400px;"></div>
+    
+    <script>
+        const map = L.map('map').setView([0, 0], 2);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+    
+        let marker = L.marker([0, 0]).addTo(map);
+    
+        navigator.geolocation.watchPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                map.setView([latitude, longitude], 15);
+                marker.setLatLng([latitude, longitude]);
+    
+                socket.emit('send-location', { latitude, longitude });
+            },
+            (error) => {
+                console.error("Error getting location", error);
+            },
+            {
+                enableHighAccuracy: true
+            }
+        );
+    
+        socket.on('receive-location', (data) => {
+            // Handle receiving location data from other clients
+            console.log('New location from another client:', data);
+        });
+    </script>
+    
+</body>
+</html>
