@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        #chat-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            padding: 20px;
+        }
+        #chat-box {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        .message {
+            margin: 5px 0;
+        }
+        .user-message {
+            text-align: right;
+            color: blue;
+        }
+        .bot-message {
+            text-align: left;
+            color: green;
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="chat-container">
+        <h2>Chatbot</h2>
+        <div id="chat-box"></div>
+        <input type="text" id="user-input" placeholder="Type your message...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <script>
+        function sendMessage() {
+            const userInput = document.getElementById('user-input').value;
+            const chatBox = document.getElementById('chat-box');
+            
+            if (userInput.trim() === '') return;
+            
+            // Append user message to chat
+            const userMessage = document.createElement('div');
+            userMessage.classList.add('message', 'user-message');
+            userMessage.textContent = userInput;
+            chatBox.appendChild(userMessage);
+            
+            // Scroll chat box to bottom
+            chatBox.scrollTop = chatBox.scrollHeight;
+            
+            // Clear input field
+            document.getElementById('user-input').value = '';
+
+            // Prepare and send chatbot request
+            const data = JSON.stringify({
+                query: userInput,
+                sysMsg: 'You are a friendly Chatbot.'
+            });
+
+            const xhr = new XMLHttpRequest();
+            xhr.withCredentials = true;
+
+            xhr.addEventListener('readystatechange', function () {
+                if (this.readyState === this.DONE) {
+                    // Append bot message to chat
+                    const botMessage = document.createElement('div');
+                    botMessage.classList.add('message', 'bot-message');
+                    botMessage.textContent = this.responseText;
+                    chatBox.appendChild(botMessage);
+
+                    // Scroll chat box to bottom
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                }
+            });
+
+            xhr.open('POST', 'https://infinite-gpt.p.rapidapi.com/infinite-gpt');
+            xhr.setRequestHeader('x-rapidapi-key', '075775034emsh6a638ef93bca16ap1e8472jsn4bd9b2b5611f');
+            xhr.setRequestHeader('x-rapidapi-host', 'infinite-gpt.p.rapidapi.com');
+            xhr.setRequestHeader('Content-Type', 'application/json');
+
+            xhr.send(data);
+        }
+    </script>
+
+</body>
+</html>
